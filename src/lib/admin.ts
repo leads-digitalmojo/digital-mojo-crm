@@ -17,11 +17,11 @@ export const ADMIN_CONFIG = {
     // Set a hard limit on the number of users who can register
     MAX_USERS: 10,
 
-    // Set this to true to enforce the whitelist
-    ENFORCE_WHITELIST: true,
+    // Set this to false to allow any Firebase user to login
+    ENFORCE_WHITELIST: false,
 
-    // Set this to true to enforce the max user limit
-    ENFORCE_MAX_LIMIT: true
+    // Set this to false if you don't want to limit user registrations
+    ENFORCE_MAX_LIMIT: false
 };
 
 /**
