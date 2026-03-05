@@ -100,7 +100,7 @@ firebase emulators:start --export-on-exit=./emulator-data
 3. **Open app**: http://localhost:5173
 4. **Test features** - All reads/writes are FREE!
 5. **View data**: http://localhost:4000
-
+6. **Stop emulators**: `npm run stop`
 ---
 
 ## 🔁 Switching Back to Production
@@ -138,7 +138,7 @@ Change ports in `firebase.json`:
 ### Want to Seed Test Data?
 
 Create test users and data through the Emulator UI at http://localhost:4000
-
+ 
 ---
 
 ## 📚 Learn More

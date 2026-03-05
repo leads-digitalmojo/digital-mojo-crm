@@ -318,7 +318,8 @@ const Opportunities: React.FC = () => {
     const [filters, setFilters] = useState({
         stage: [] as string[],
         status: '',
-        opportunityType: ''
+        opportunityType: '',
+        selectedMonth: ''
     });
 
     const getStageRank = (title: string) => {
@@ -472,9 +473,11 @@ const Opportunities: React.FC = () => {
                 if (new Date(opp.followUpDate).getTime() < today) return false;
             }
 
-            return matchesSearch && matchesStage && matchesStatus && matchesType;
+            const matchesMonth = filters.selectedMonth ? (opp.createdAt && opp.createdAt.startsWith(filters.selectedMonth)) : true;
+
+            return matchesSearch && matchesStage && matchesStatus && matchesType && matchesMonth;
         }).sort(sortOpps);
-    }, [opportunities, searchTerm, filters.stage, filters.status, filters.opportunityType, sortOrder, sortBy, stages, viewMode]);
+    }, [opportunities, searchTerm, filters.stage, filters.status, filters.opportunityType, filters.selectedMonth, sortOrder, sortBy, stages, viewMode]);
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
@@ -989,13 +992,14 @@ const Opportunities: React.FC = () => {
     };
 
     const handleExport = () => {
-        if (opportunities.length === 0) {
+        if (visibleOpportunities.length === 0) {
             toast.error('No opportunities to export');
             return;
         }
 
-        const csvData = opportunities.map(opp => ({
+        const csvData = visibleOpportunities.map(opp => ({
             'Opportunity Name': opp.name,
+            'Opportunity Type': opp.opportunityType || '',
             'Value': opp.value,
             'Stage': stages.find(s => s.id === opp.stage)?.title || opp.stage,
             'Notes': opp.notes && opp.notes.length > 0 ? (opp.notes[opp.notes.length - 1] as any).content : '',
@@ -1051,7 +1055,7 @@ const Opportunities: React.FC = () => {
                             onClick={handleExport}
                             className="hidden md:flex px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 shadow-sm items-center gap-2"
                         >
-                            <Download size={16} /> Export
+                            <Download size={16} /> Export ({visibleOpportunities.length})
                         </button>
                         <button
                             onClick={() => handleOpenModal()}
@@ -1178,9 +1182,9 @@ const Opportunities: React.FC = () => {
                     <div className="relative" ref={filterRef}>
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`px-3 py-2 border rounded-lg flex items-center gap-2 text-sm font-medium ${isFilterOpen || filters.stage.length > 0 || filters.status || filters.opportunityType ? 'bg-blue-50 border-brand-blue text-brand-blue' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                            className={`px-3 py-2 border rounded-lg flex items-center gap-2 text-sm font-medium ${isFilterOpen || filters.stage.length > 0 || filters.status || filters.opportunityType || filters.selectedMonth ? 'bg-blue-50 border-brand-blue text-brand-blue' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
                         >
-                            <Filter size={18} /> Filters {(filters.stage.length > 0 || filters.status || filters.opportunityType) && <span className="w-2 h-2 rounded-full bg-brand-blue mb-2"></span>}
+                            <Filter size={18} /> Filters {(filters.stage.length > 0 || filters.status || filters.opportunityType || filters.selectedMonth) && <span className="w-2 h-2 rounded-full bg-brand-blue mb-2"></span>}
                         </button>
 
                         {/* Filter Dropdown */}
@@ -1243,13 +1247,32 @@ const Opportunities: React.FC = () => {
                                         <option value="Others">Others</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Month</label>
+                                    <input
+                                        type="month"
+                                        value={filters.selectedMonth}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, selectedMonth: e.target.value }))}
+                                        className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue"
+                                    />
+                                </div>
                                 <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
-                                    <button
-                                        onClick={() => setFilters({ stage: [], status: '', opportunityType: '' })}
-                                        className="text-xs text-red-600 hover:text-red-700 font-medium"
-                                    >
-                                        Clear Filters
-                                    </button>
+                                    <div className="flex gap-3 items-center">
+                                        <button
+                                            onClick={() => setFilters({ stage: [], status: '', opportunityType: '', selectedMonth: '' })}
+                                            className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                        >
+                                            Clear Filters
+                                        </button>
+                                        {(filters.stage.length > 0 || filters.status || filters.opportunityType || filters.selectedMonth || searchTerm) && (
+                                            <button
+                                                onClick={handleExport}
+                                                className="text-xs text-brand-blue hover:text-brand-blue/80 font-bold flex items-center gap-1"
+                                            >
+                                                <Download size={14} /> Download Results
+                                            </button>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={() => setIsFilterOpen(false)}
                                         className="px-3 py-1.5 bg-brand-blue text-white rounded text-xs font-bold hover:bg-brand-blue/90"
